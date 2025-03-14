@@ -8,3 +8,4 @@
 - z-function
 - hashing
 - Knuth–Morris–Pratt (kmp)
+- compress

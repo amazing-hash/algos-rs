@@ -108,3 +108,19 @@ fn test_kmp() {
     assert_eq!(kmp("aaaaa", "a"), vec![0, 1, 2, 3, 4]);
     assert_eq!(kmp("abcdabcd", "abc"), vec![0, 4]);
 }
+
+#[allow(unused)]
+pub fn compress(s: &str) -> (&str, usize) {
+    let k = s.len() - prefix_function(s)[s.len() - 1];
+    match s.len() % k {
+        0 => (&s[..k], s.len() / k),
+        _ => (s, 1),
+    }
+}
+
+#[cfg(test)]
+#[test]
+fn test() {
+    assert_eq!(compress("abcabcabc"), ("abc", 3));
+    assert_eq!(compress("abcd"), ("abcd", 1));
+}
