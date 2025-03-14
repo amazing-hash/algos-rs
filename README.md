@@ -1,2 +1,3 @@
-# algos-rs
-Algorithms
+## Algorithms
+
+- combinatorics (permutations, next_subset)
