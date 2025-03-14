@@ -53,3 +53,24 @@ pub fn z_function(src: &str) -> Vec<usize> {
 fn test_z_function_ascii() {
     assert_eq!(z_function("abacaba"), [0, 0, 1, 0, 3, 0, 1]);
 }
+
+#[allow(unused)]
+pub fn hash(s: &str) -> u64 {
+    let mut k = 1;
+    let mut res = 0u64;
+    for ch in s.as_bytes() {
+        res = res.wrapping_add((*ch as u64).wrapping_mul(k));
+        k = k.wrapping_mul(31);
+    }
+    res
+}
+
+#[cfg(test)]
+#[test]
+fn test_hash() {
+    assert_eq!(hash(""), 0);
+    assert_eq!(hash("a"), 97);
+    assert_eq!(hash("abc"), 98274);
+    assert_eq!(hash("abcdabcd"), 2842022591228);
+    assert_eq!(hash("abcd"), hash("abcd"));
+}

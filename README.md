@@ -6,3 +6,4 @@
 #### string:
 - prefix function
 - z-function
+- hashing
