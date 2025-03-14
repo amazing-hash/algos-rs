@@ -38,11 +38,7 @@ pub fn next_subset(arr: &mut [bool], current: &mut usize) -> Option<()> {
     if *current < (1 << arr.len()) {
         for (j, item) in arr.iter_mut().enumerate() {
             let value = 1 << j;
-            if *current & value == value {
-                *item = true;
-            } else {
-                *item = false;
-            }
+            *item = *current & value == value;
         }
         *current += 1;
         return Some(());

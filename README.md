@@ -1,3 +1,7 @@
-## Algorithms
+### List of algorithms
 
-- combinatorics (permutations, next_subset)
+#### combinatorics:
+ - permutations
+ - subset generator
+#### string:
+- prefix function
