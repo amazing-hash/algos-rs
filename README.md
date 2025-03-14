@@ -5,3 +5,4 @@
  - subset generator
 #### string:
 - prefix function
+- z-function
