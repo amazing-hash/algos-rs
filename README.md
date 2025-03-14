@@ -7,3 +7,4 @@
 - prefix function
 - z-function
 - hashing
+- Knuth–Morris–Pratt (kmp)

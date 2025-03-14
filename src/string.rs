@@ -74,3 +74,37 @@ fn test_hash() {
     assert_eq!(hash("abcdabcd"), 2842022591228);
     assert_eq!(hash("abcd"), hash("abcd"));
 }
+
+#[allow(unused)]
+pub fn kmp(t: &str, p: &str) -> Vec<usize> {
+    if t.is_empty() || p.is_empty() {
+        return vec![];
+    }
+    let mut res = vec![];
+    let prefix = prefix_function(p);
+    let bytes = p.as_bytes();
+    let mut idx = 0;
+    for (i, value) in t.as_bytes().iter().enumerate() {
+        while idx > 0 && bytes[idx] != *value {
+            idx = prefix[idx - 1];
+        }
+        if bytes[idx] == *value {
+            idx += 1;
+        }
+        if idx == p.len() {
+            res.push(i + 1 - idx);
+            idx = prefix[idx - 1];
+        }
+    }
+    res
+}
+
+#[cfg(test)]
+#[test]
+fn test_kmp() {
+    assert_eq!(kmp("ababcxabdabcxabcxabcde", "abcxabcde"), vec![13]);
+    assert_eq!(kmp("a", "ab"), vec![]);
+    assert_eq!(kmp("", ""), vec![]);
+    assert_eq!(kmp("aaaaa", "a"), vec![0, 1, 2, 3, 4]);
+    assert_eq!(kmp("abcdabcd", "abc"), vec![0, 4]);
+}
