@@ -67,6 +67,16 @@ pub fn hash(s: &str) -> u64 {
     res
 }
 
+#[allow(unused)]
+pub fn hash2(s: &str) -> u64 {
+    let mut k = 1;
+    let mut res = 0u64;
+    for ch in s.as_bytes() {
+        res = res.wrapping_mul(31).wrapping_add(*ch as u64);
+    }
+    res
+}
+
 #[cfg(test)]
 #[test]
 fn test_hash() {
@@ -75,6 +85,38 @@ fn test_hash() {
     assert_eq!(hash("abc"), 98274);
     assert_eq!(hash("abcdabcd"), 2842022591228);
     assert_eq!(hash("abcd"), hash("abcd"));
+}
+
+#[allow(unused)]
+pub fn rabin_karp(t: &str, p: &str) -> Vec<usize> {
+    if t.is_empty() || p.is_empty() {
+        return vec![];
+    }
+    let bytes = t.as_bytes();
+    let mut res = vec![];
+    let hash_p = hash2(p);
+    let mut hash_t = hash2(&t[0..p.len()]);
+    for i in 0..t.len() - p.len() {
+        if hash_p == hash_t {
+            res.push(i);
+        }
+        hash_t = hash_t
+            .wrapping_mul(31u64)
+            .wrapping_add(bytes[i + p.len()] as u64)
+            .wrapping_sub((bytes[i] as u64).wrapping_mul(31u64.wrapping_pow(p.len() as u32)));
+    }
+    if hash_p == hash_t {
+        res.push(t.len() - p.len());
+    }
+    res
+}
+
+#[cfg(test)]
+#[test]
+fn test_rabin_karp() {
+    assert_eq!(rabin_karp("abcxabcxyabcxyz", "abc"), vec![0, 4, 9]);
+    assert_eq!(rabin_karp("ababaac", "bab"), vec![1]);
+    assert_eq!(rabin_karp("ababcxabdabcxabcxabcde", "abcxabcde"), vec![13]);
 }
 
 #[allow(unused)]

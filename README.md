@@ -12,3 +12,4 @@
 - Levenshtein distance
 - Aho Corasick
 - Diferent substrings generator
+- Rabin-Karp
