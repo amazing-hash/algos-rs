@@ -124,3 +124,48 @@ fn test() {
     assert_eq!(compress("abcabcabc"), ("abc", 3));
     assert_eq!(compress("abcd"), ("abcd", 1));
 }
+
+#[allow(unused)]
+pub fn levenshtein_distance(
+    first: &str,
+    second: &str,
+    delete_cost: u32,
+    insert_cost: u32,
+    replace_cost: u32,
+) -> u32 {
+    let first = first.as_bytes();
+    let second = second.as_bytes();
+    let mut dist = vec![0; first.len() + 1];
+    for j in 1..(first.len() + 1) {
+        dist[j] = dist[j - 1] + insert_cost;
+    }
+    for i in 1..second.len() + 1 {
+        let mut dist_temp = vec![0; first.len() + 1];
+        dist_temp[0] = dist[0] + delete_cost;
+        for j in 1..(first.len() + 1) {
+            if second[i - 1] != first[j - 1] {
+                dist_temp[j] = std::cmp::min(
+                    std::cmp::min(dist[j] + delete_cost, dist[j - 1] + insert_cost),
+                    dist_temp[j - 1] + replace_cost,
+                );
+            } else {
+                dist_temp[j] = dist[j - 1];
+            }
+        }
+        dist = dist_temp;
+    }
+    dist[first.len()]
+}
+
+#[cfg(test)]
+#[test]
+fn test_levenshtein_distance() {
+    assert_eq!(
+        levenshtein_distance("POLYNOMIAL", "EXPONENTIAL", 1, 1, 1),
+        6
+    );
+    assert_eq!(levenshtein_distance("abcdasdasd", "cddabcd", 1, 1, 1), 6);
+    assert_eq!(levenshtein_distance("", "", 1, 1, 1), 0);
+    assert_eq!(levenshtein_distance("aaa", "aaa", 1, 1, 1), 0);
+    assert_eq!(levenshtein_distance("", "aaa", 1, 1, 1), 3);
+}

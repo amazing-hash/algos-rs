@@ -9,3 +9,4 @@
 - hashing
 - Knuth–Morris–Pratt (kmp)
 - compress
+- Levenshtein distance
