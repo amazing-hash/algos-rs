@@ -1,13 +1,14 @@
 ### List of algorithms
 
 #### combinatorics:
- - permutations
- - subset generator
+ - Permutations
+ - Subset generator
 #### string:
-- prefix function
-- z-function
-- hashing
+- Prefix function
+- Z function
+- Hashing
 - Knuth–Morris–Pratt (kmp)
-- compress
+- Compress
 - Levenshtein distance
 - Aho Corasick
+- Diferent substrings generator

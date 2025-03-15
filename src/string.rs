@@ -348,3 +348,48 @@ fn aho_corasick_test() {
     map.insert(1, vec![1, 3, 5]);
     assert_eq!(map, res);
 }
+
+#[allow(unused)]
+pub fn diferent_substrings_generator(s: &str) -> Vec<&str> {
+    let mut seq = vec![];
+    for i in (0..s.len()).rev() {
+        let pr = z_function(&s[i..s.len()]);
+        let res = s.len() - i - pr.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+        for j in 0..res {
+            seq.push(&s[i..s.len() - j]);
+        }
+    }
+    seq
+}
+
+#[allow(unused)]
+pub fn distinct_substrings_count(s: &str) -> usize {
+    let mut cnt = 0;
+    for i in (0..s.len()).rev() {
+        let pr = z_function(&s[i..s.len()]);
+        let res = s.len() - i - pr.iter().max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+        cnt += res;
+    }
+    cnt
+}
+
+#[cfg(test)]
+#[test]
+fn test_distinct_substrings() {
+    assert_eq!(diferent_substrings_generator("a"), vec!["a"]);
+    assert_eq!(
+        diferent_substrings_generator("aaaa"),
+        vec!["a", "aa", "aaa", "aaaa"]
+    );
+    assert_eq!(diferent_substrings_generator(""), Vec::<&str>::new());
+    let mut values = diferent_substrings_generator("abaaba");
+    values.sort();
+    assert_eq!(
+        values,
+        vec![
+            "a", "aa", "aab", "aaba", "ab", "aba", "abaa", "abaab", "abaaba", "b", "ba", "baa",
+            "baab", "baaba"
+        ]
+    );
+    assert_eq!(distinct_substrings_count("abacabadabacaba"), 85);
+}
