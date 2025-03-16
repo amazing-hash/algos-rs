@@ -436,8 +436,9 @@ fn test_distinct_substrings() {
     assert_eq!(distinct_substrings_count("abacabadabacaba"), 85);
 }
 
+// Find minimum string period
 #[allow(unused)]
-pub fn find_minimum_string_period(src: &str) -> &str {
+pub fn msp(src: &str) -> &str {
     for (idx, value) in z_function(src).iter().enumerate() {
         if value + idx == src.len() && src.len() % idx == 0 {
             return &src[..idx];
@@ -453,8 +454,90 @@ pub fn find_minimum_string_period(src: &str) -> &str {
 
 #[test]
 fn test_minimum_string_period() {
-    assert_eq!(find_minimum_string_period("abcabcabca"), "abc");
-    assert_eq!(find_minimum_string_period("abcdefg"), "abcdefg");
-    assert_eq!(find_minimum_string_period("abcabcabcd"), "abcabcabcd");
-    assert_eq!(find_minimum_string_period(""), "");
+    assert_eq!(msp("abcabcabca"), "abc");
+    assert_eq!(msp("abcdefg"), "abcdefg");
+    assert_eq!(msp("abcabcabcd"), "abcabcabcd");
+    assert_eq!(msp(""), "");
+}
+
+// Longest Common Substring
+#[allow(unused)]
+pub fn lcs<'a>(a: &'a str, b: &'a str) -> Option<&'a str> {
+    if a.is_empty() || b.is_empty() {
+        return None;
+    }
+    let mut p: Vec<u64> = vec![1; std::cmp::max(a.len(), b.len())];
+    let mut h1: Vec<u64> = vec![0; a.len()];
+    let mut h2: Vec<u64> = vec![0; b.len()];
+    for idx in 1..p.len() {
+        p[idx] = p[idx - 1].wrapping_mul(31);
+    }
+    for (idx, ch) in a.as_bytes().iter().enumerate() {
+        h1[idx] = (*ch as u64).wrapping_mul(p[idx]);
+        if idx != 0 {
+            h1[idx] = h1[idx].wrapping_add(h1[idx - 1]);
+        }
+    }
+    for (idx, ch) in b.as_bytes().iter().enumerate() {
+        h2[idx] = (*ch as u64).wrapping_mul(p[idx]);
+        if idx != 0 {
+            h2[idx] = h2[idx].wrapping_add(h2[idx - 1]);
+        }
+    }
+    let mut res = None;
+    let mut l = 0;
+    let mut r = std::cmp::min(a.len(), b.len()) - 1;
+    while l < r {
+        let mid = r - (r - l) / 2;
+        let mut map = std::collections::HashMap::new();
+        for i in 0..a.len() - mid {
+            let mut hash = h1[i + mid];
+            if i != 0 {
+                hash = hash.wrapping_sub(h1[i - 1]);
+            }
+            hash = hash.wrapping_mul(p[p.len() - i - 1]);
+            map.insert(hash, i);
+        }
+        let mut f = false;
+        for i in 0..b.len() - mid {
+            let mut hash = h2[i + mid];
+            if i != 0 {
+                hash = hash.wrapping_sub(h2[i - 1]);
+            }
+            hash = hash.wrapping_mul(p[p.len() - i - 1]);
+            if let Some(idx) = map.get(&hash) {
+                if b[i..i + mid + 1] == a[*idx..*idx + mid + 1] {
+                    res = Some(&b[i..i + mid + 1]);
+                    f = true;
+                    break;
+                }
+            }
+        }
+        if f {
+            l = mid;
+        } else {
+            r = mid - 1;
+        }
+    }
+    res
+}
+
+#[cfg(test)]
+#[test]
+fn test_longest_common_substring() {
+    assert_eq!(
+        lcs(
+            "VOTEFORTHEGREATALBANIAFORYOU",
+            "CHOOSETHEGREATALBANIANFUTURE"
+        ),
+        Some("THEGREATALBANIA")
+    );
+    assert_eq!(lcs("aba", "cabdd"), Some("ab"));
+    assert_eq!(lcs("aaaaa", "bbaaa"), Some("aaa"));
+    assert_eq!(lcs("", "bbaaa"), None);
+    assert_eq!(lcs("abcde", "abcde"), Some("abcde"));
+    assert_eq!(
+        lcs("aaaaaaaaaaaaaaaaaaaaaaaaab", "aaaaaaaaaaaaaaaaaaaaaaaaac"),
+        Some("aaaaaaaaaaaaaaaaaaaaaaaaa")
+    );
 }

@@ -13,4 +13,5 @@
 - Aho Corasick
 - Diferent substrings generator
 - Rabin-Karp
-- Find minimum string period
+- Find minimum string period (msp)
+- Longest common substring (lcs)
