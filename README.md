@@ -13,3 +13,4 @@
 - Aho Corasick
 - Diferent substrings generator
 - Rabin-Karp
+- Find minimum string period

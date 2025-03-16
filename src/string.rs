@@ -435,3 +435,26 @@ fn test_distinct_substrings() {
     );
     assert_eq!(distinct_substrings_count("abacabadabacaba"), 85);
 }
+
+#[allow(unused)]
+pub fn find_minimum_string_period(src: &str) -> &str {
+    for (idx, value) in z_function(src).iter().enumerate() {
+        if value + idx == src.len() && src.len() % idx == 0 {
+            return &src[..idx];
+        } else if value + idx == src.len() {
+            let k = src.len() % idx;
+            if src[..k] == src[src.len() - k..] {
+                return &src[..idx];
+            }
+        }
+    }
+    src
+}
+
+#[test]
+fn test_minimum_string_period() {
+    assert_eq!(find_minimum_string_period("abcabcabca"), "abc");
+    assert_eq!(find_minimum_string_period("abcdefg"), "abcdefg");
+    assert_eq!(find_minimum_string_period("abcabcabcd"), "abcabcabcd");
+    assert_eq!(find_minimum_string_period(""), "");
+}
