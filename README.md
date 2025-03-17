@@ -15,3 +15,7 @@
 - Rabin-Karp
 - Find minimum string period (msp)
 - Longest common substring (lcs)
+#### binary search
+- Binary search
+- Lower bound
+- Upper bound
