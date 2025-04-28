@@ -19,3 +19,5 @@
 - Binary search
 - Lower bound
 - Upper bound
+#### random
+- xorshift_32
