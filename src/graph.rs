@@ -265,3 +265,69 @@ fn find_cycle_test() {
     graph[3].push(2); // Add edge 3 -> 2
     find_cycle(&graph, func);
 }
+
+#[allow(unused)]
+fn find_cycle_oriented<F>(graph: &Graph, mut cb: F)
+where
+    F: FnMut(Vec<usize>) -> (),
+{
+    let mut parents: Vec<Option<usize>> = vec![None; graph.len()];
+    let mut colors = vec![Color::White; graph.len()];
+    let n = graph.len();
+    for start_node in 0..n {
+        if colors[start_node] == Color::White {
+            find_cycle_oriented_inner(graph, &mut colors, &mut parents, start_node, &mut cb);
+        }
+    }
+}
+
+#[allow(unused)]
+fn find_cycle_oriented_inner<F>(
+    graph: &Graph,
+    colors: &mut [Color],
+    parents: &mut [Option<usize>],
+    curr_node: usize,
+    cb: &mut F,
+) where
+    F: FnMut(Vec<usize>) -> (),
+{
+    colors[curr_node] = Color::Grey;
+    for &next_node in graph[curr_node].iter() {
+        if colors[next_node] == Color::Grey {
+            // cycle has been detected
+            let mut s = curr_node;
+            let mut vertexes = vec![];
+            vertexes.push(s);
+            while s != next_node {
+                s = parents[s].unwrap();
+                vertexes.push(s);
+            }
+            vertexes.reverse();
+            cb(vertexes);
+        }
+        if colors[next_node] == Color::White {
+            parents[next_node] = Some(curr_node);
+            find_cycle_oriented_inner(graph, colors, parents, next_node, cb);
+        }
+    }
+    colors[curr_node] = Color::Black;
+}
+
+#[test]
+fn find_cycle_oriented_test() {
+    let func = |_vertexes: Vec<usize>| assert_eq!(true, false);
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push(2); // Add edge 1 -> 2
+    graph[1].push(8); // Add edge 1 -> 8
+    graph[2].push(3); // Add edge 2 -> 3
+    graph[3].push(4); // Add edge 3 -> 4
+    find_cycle_oriented(&graph, func);
+
+    let func = |vertexes: Vec<usize>| assert_eq!(vertexes, vec![1, 2, 3]);
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push(2); // Add edge 1 -> 2
+    graph[2].push(3); // Add edge 2 -> 3
+    graph[3].push(1); // Add edge 3 -> 1
+
+    find_cycle_oriented(&graph, func);
+}
