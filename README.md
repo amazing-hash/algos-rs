@@ -21,3 +21,5 @@
 - Upper bound
 #### random
 - xorshift_32
+#### graph
+- bfs
