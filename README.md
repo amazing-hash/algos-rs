@@ -24,3 +24,4 @@
 #### graph
 - bfs
 - search_components
+- dfs

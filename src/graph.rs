@@ -9,6 +9,12 @@ pub enum Color {
     Black,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Event {
+    Enter,
+    Exit,
+}
+
 #[allow(unused)]
 fn bfs<F>(graph: &Graph, mut cb: F)
 where
@@ -119,4 +125,56 @@ fn search_components_test() {
     };
     search_components(&graph, func);
     // println!("{:?}", components);
+}
+
+#[allow(unused)]
+fn dfs<F>(graph: &Graph, mut cb: F)
+where
+    F: FnMut(usize, Event) -> (),
+{
+    let mut used = vec![false; graph.len()];
+    let n = graph.len();
+    for start_node in 0..n {
+        if !used[start_node] {
+            dfs_innner(graph, &mut used, start_node, &mut cb);
+        }
+    }
+}
+
+#[allow(unused)]
+fn dfs_innner<F>(graph: &Graph, used: &mut [bool], curr_node: usize, cb: &mut F)
+where
+    F: FnMut(usize, Event) -> (),
+{
+    cb(curr_node, Event::Enter);
+    used[curr_node] = true;
+    for &next_node in graph[curr_node].iter() {
+        if !used[next_node] {
+            dfs_innner(graph, used, next_node, cb);
+        }
+    }
+    cb(curr_node, Event::Exit);
+}
+
+#[test]
+fn dfs_test() {
+    let func = |node: usize, event: Event| println!("visited vertex {}, event {:?}", node, event);
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push(2); // Add edge  1 -> 2
+    graph[2].push(1); // Add edge  2 -> 1
+    graph[1].push(8); // Add edge  1 -> 8
+    graph[8].push(1); // Add edge  8 -> 1
+    graph[2].push(3); // Add edge  2 -> 3
+    graph[3].push(2); // Add edge  3 -> 2
+    graph[3].push(4); // Add edge  3 -> 4
+    graph[4].push(3); // Add edge  4 -> 3
+    dfs(&graph, func);
+    let mut vertexes = vec![];
+    let func = |node: usize, event: Event| {
+        if event == Event::Enter {
+            vertexes.push(node);
+        }
+    };
+    dfs(&graph, func);
+    // println!("{:?}", vertexes);
 }
