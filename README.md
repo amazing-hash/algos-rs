@@ -25,3 +25,4 @@
 - bfs
 - search_components
 - dfs
+- find cycle

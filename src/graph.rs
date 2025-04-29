@@ -178,3 +178,90 @@ fn dfs_test() {
     dfs(&graph, func);
     // println!("{:?}", vertexes);
 }
+
+#[allow(unused)]
+fn find_cycle<F>(graph: &Graph, mut cb: F)
+where
+    F: FnMut(Vec<usize>) -> (),
+{
+    let mut parents: Vec<Option<usize>> = vec![None; graph.len()];
+    let mut colors = vec![Color::White; graph.len()];
+    let n = graph.len();
+    for start_node in 0..n {
+        if colors[start_node] == Color::White {
+            find_cycle_inner(graph, &mut colors, &mut parents, start_node, &mut cb);
+        }
+    }
+}
+
+#[allow(unused)]
+fn find_cycle_inner<F>(
+    graph: &Graph,
+    colors: &mut [Color],
+    parents: &mut [Option<usize>],
+    curr_node: usize,
+    cb: &mut F,
+) where
+    F: FnMut(Vec<usize>) -> (),
+{
+    colors[curr_node] = Color::Grey;
+    for &next_node in graph[curr_node].iter() {
+        if colors[next_node] == Color::Grey && Some(next_node) != parents[curr_node] {
+            // cycle has been detected
+            let mut s = curr_node;
+            let mut vertexes = vec![];
+            vertexes.push(s);
+            while s != next_node {
+                s = parents[s].unwrap();
+                vertexes.push(s);
+            }
+            vertexes.reverse();
+            cb(vertexes);
+        }
+        if colors[next_node] == Color::White {
+            parents[next_node] = Some(curr_node);
+            find_cycle_inner(graph, colors, parents, next_node, cb);
+        }
+    }
+    colors[curr_node] = Color::Black;
+}
+
+#[test]
+fn find_cycle_test() {
+    let func = |vertexes: Vec<usize>| println!("cycle has been detected {:?}", vertexes);
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push(2); // Add edge 1 -> 2
+    graph[2].push(1); // Add edge 2 -> 1
+    graph[1].push(8); // Add edge 1 -> 8
+    graph[8].push(1); // Add edge 8 -> 1
+    graph[2].push(3); // Add edge 2 -> 3
+    graph[3].push(2); // Add edge 3 -> 2
+    graph[3].push(4); // Add edge 3 -> 4
+    graph[4].push(3); // Add edge 4 -> 3
+    find_cycle(&graph, func);
+
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push(2); // Add edge 1 -> 2
+    graph[2].push(1); // Add edge 2 -> 1
+    graph[1].push(8); // Add edge 1 -> 8
+    graph[8].push(1); // Add edge 8 -> 1
+    graph[2].push(8); // Add edge 2 -> 8
+    graph[8].push(2); // Add edge 8 -> 2
+    graph[2].push(3); // Add edge 2 -> 3
+    graph[3].push(2); // Add edge 3 -> 2
+    graph[3].push(4); // Add edge 3 -> 4
+    graph[4].push(3); // Add edge 4 -> 3
+    graph[2].push(4); // Add edge 2 -> 4
+    graph[4].push(2); // Add edge 4 -> 2
+    find_cycle(&graph, func);
+
+    let func = |vertexes: Vec<usize>| assert_eq!(vec![1, 2, 3], vertexes);
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push(2); // Add edge 1 -> 2
+    graph[2].push(1); // Add edge 2 -> 1
+    graph[1].push(3); // Add edge 1 -> 3
+    graph[3].push(1); // Add edge 3 -> 1
+    graph[2].push(3); // Add edge 2 -> 3
+    graph[3].push(2); // Add edge 3 -> 2
+    find_cycle(&graph, func);
+}
