@@ -23,3 +23,4 @@
 - xorshift_32
 #### graph
 - bfs
+- search_components
