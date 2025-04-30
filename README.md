@@ -22,8 +22,11 @@
 #### random
 - xorshift_32
 #### graph
-- bfs
-- search_components
-- dfs
-- find cycle
-- find cycle in a directed graph
+- Bfs
+- Search_components
+- Dfs
+- Find cycle
+- Find cycle in a directed graph
+#### sequences
+- Search for the nearest next smaller element for each element of the array
+- Search for the nearest previous smaller element for each element of the array

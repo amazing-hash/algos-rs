@@ -156,6 +156,7 @@ where
     cb(curr_node, Event::Exit);
 }
 
+#[cfg(test)]
 #[test]
 fn dfs_test() {
     let func = |node: usize, event: Event| println!("visited vertex {}, event {:?}", node, event);
@@ -226,6 +227,7 @@ fn find_cycle_inner<F>(
     colors[curr_node] = Color::Black;
 }
 
+#[cfg(test)]
 #[test]
 fn find_cycle_test() {
     let func = |vertexes: Vec<usize>| println!("cycle has been detected {:?}", vertexes);
@@ -313,6 +315,7 @@ fn find_cycle_oriented_inner<F>(
     colors[curr_node] = Color::Black;
 }
 
+#[cfg(test)]
 #[test]
 fn find_cycle_oriented_test() {
     let func = |_vertexes: Vec<usize>| assert_eq!(true, false);
