@@ -30,3 +30,5 @@
 #### sequences
 - Search for the nearest next smaller element for each element of the array
 - Search for the nearest previous smaller element for each element of the array
+#### structures
+- Dsu (disjoint set union)

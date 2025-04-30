@@ -4,3 +4,4 @@ pub mod graph;
 pub mod random;
 pub mod sequences;
 pub mod string;
+pub mod structures;
