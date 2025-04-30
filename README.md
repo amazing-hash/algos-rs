@@ -32,3 +32,4 @@
 - Search for the nearest previous smaller element for each element of the array
 #### structures
 - Dsu (disjoint set union)
+- Bloom filter
