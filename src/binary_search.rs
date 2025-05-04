@@ -9,7 +9,7 @@ where
     let mut l = 0isize;
     let mut r = container.len() as isize - 1;
     while l < r {
-        let idx = (l + r) / 2;
+        let idx = l + (r - l) / 2;
         if container[idx as usize] == *key {
             return Some(idx as usize);
         }
