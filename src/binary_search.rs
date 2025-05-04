@@ -118,6 +118,12 @@ fn binary_search_test() {
     assert_eq!(binary_search(&seq, &7), None);
     assert_eq!(binary_search(&seq, &21), None);
 
+    let seq = vec![1];
+    assert_eq!(binary_search(&seq, &1).unwrap(), 0);
+
+    let seq = vec![1, 2, 3, 4, 5];
+    assert_eq!(binary_search(&seq, &5).unwrap(), 4);
+
     let seq = vec![1, 2, 3, 4, 5, 8, 8, 8, 9, 20];
     assert_eq!(lower_bound(&seq, &8), 5);
     assert_eq!(lower_bound(&seq, &1), 0);

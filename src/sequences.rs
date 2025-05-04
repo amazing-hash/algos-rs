@@ -84,3 +84,44 @@ fn search_nearest_pse_for_each_element_test() {
         vec![None, None, None, None, None]
     );
 }
+
+// Search insert position of K in a sorted array
+#[allow(unused)]
+pub fn search_insert_pos(arr: &[i32], k: i32) -> usize {
+    if arr.is_empty() {
+        return 0;
+    }
+    let mut left = 0isize;
+    let mut right = arr.len() as isize - 1;
+
+    while left <= right {
+        let mid = left + (right - left) / 2;
+
+        // If k is found at mid
+        if arr[mid as usize] == k {
+            return mid as usize;
+        }
+        // If k is smaller, search in left half
+        else if arr[mid as usize] > k {
+            right = mid - 1;
+        }
+        // If k is larger, search in right half
+        else {
+            left = mid + 1;
+        }
+    }
+
+    // If k is not found, return insert position
+    return left as usize;
+}
+
+#[cfg(test)]
+#[test]
+fn search_insert_pos_test() {
+    let array = &[1, 3, 5, 6];
+    assert_eq!(search_insert_pos(array, 5), 2);
+    let array = &[12];
+    assert_eq!(search_insert_pos(array, 5), 0);
+    let array = &[];
+    assert_eq!(search_insert_pos(array, 5), 0);
+}
