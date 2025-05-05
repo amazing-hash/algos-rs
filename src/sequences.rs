@@ -125,3 +125,45 @@ fn search_insert_pos_test() {
     let array = &[];
     assert_eq!(search_insert_pos(array, 5), 0);
 }
+
+// Search longest common subsequence
+#[allow(unused)]
+pub fn lcs(a: &[i32], b: &[i32]) -> Vec<i32> {
+    let mut ans = vec![];
+    let mut dp = vec![vec![0; b.len() + 1]; a.len() + 1];
+    for i in 1..=a.len() {
+        for j in 1..=b.len() {
+            if a[i - 1] == b[j - 1] {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = std::cmp::max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+    let mut i = a.len();
+    let mut j = b.len();
+    while i > 0 && j > 0  {
+        if a[i - 1] == b[j - 1] {
+            ans.push(a[i - 1]);
+            i -= 1;
+            j -= 1;
+        } else if dp[i][j] == dp[i][j - 1] {
+            j -= 1;
+        } else {
+            i -= 1;
+        }
+    }
+    ans.reverse();
+    ans
+}
+
+#[cfg(test)]
+#[test]
+fn lcs_test() {
+    let a = [1, 2, 3];
+    let b = [3, 2, 1];
+    assert_eq!(lcs(&a, &b), vec![3]);
+    let a = [1, 100, 2, 100, 3];
+    let b = [10, 10, 1, 2, 3, 10];
+    assert_eq!(lcs(&a, &b), vec![1, 2, 3]);
+}
