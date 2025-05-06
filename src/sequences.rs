@@ -142,7 +142,7 @@ pub fn lcs(a: &[i32], b: &[i32]) -> Vec<i32> {
     }
     let mut i = a.len();
     let mut j = b.len();
-    while i > 0 && j > 0  {
+    while i > 0 && j > 0 {
         if a[i - 1] == b[j - 1] {
             ans.push(a[i - 1]);
             i -= 1;

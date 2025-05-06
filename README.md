@@ -35,3 +35,9 @@
 #### structures
 - Dsu (disjoint set union)
 - Bloom filter
+#### math
+- GCD
+- Fast exponentiation
+- Fibonacci
+- Primality test (Ferma)
+- Generator simple numbers
