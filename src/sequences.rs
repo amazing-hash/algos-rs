@@ -97,6 +97,7 @@ pub fn search_insert_pos(arr: &[i32], k: i32) -> usize {
     while left <= right {
         let mid = left + (right - left) / 2;
 
+        #[allow(clippy::comparison_chain)]
         // If k is found at mid
         if arr[mid as usize] == k {
             return mid as usize;
@@ -112,7 +113,7 @@ pub fn search_insert_pos(arr: &[i32], k: i32) -> usize {
     }
 
     // If k is not found, return insert position
-    return left as usize;
+    left as usize
 }
 
 #[cfg(test)]

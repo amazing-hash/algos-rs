@@ -18,7 +18,7 @@ pub enum Event {
 #[allow(unused)]
 fn bfs<F>(graph: &Graph, mut cb: F)
 where
-    F: FnMut(usize) -> (),
+    F: FnMut(usize),
 {
     let mut used = vec![false; graph.len()];
     let n = graph.len();
@@ -69,7 +69,7 @@ fn bfs_test() {
 #[allow(unused)]
 fn search_components<F>(graph: &Graph, mut cb: F)
 where
-    F: FnMut(usize, i32) -> (),
+    F: FnMut(usize, i32),
 {
     let mut used = vec![false; graph.len()];
     let n = graph.len();
@@ -130,7 +130,7 @@ fn search_components_test() {
 #[allow(unused)]
 fn dfs<F>(graph: &Graph, mut cb: F)
 where
-    F: FnMut(usize, Event) -> (),
+    F: FnMut(usize, Event),
 {
     let mut used = vec![false; graph.len()];
     let n = graph.len();
@@ -144,7 +144,7 @@ where
 #[allow(unused)]
 fn dfs_innner<F>(graph: &Graph, used: &mut [bool], curr_node: usize, cb: &mut F)
 where
-    F: FnMut(usize, Event) -> (),
+    F: FnMut(usize, Event),
 {
     cb(curr_node, Event::Enter);
     used[curr_node] = true;
@@ -183,7 +183,7 @@ fn dfs_test() {
 #[allow(unused)]
 fn find_cycle<F>(graph: &Graph, mut cb: F)
 where
-    F: FnMut(Vec<usize>) -> (),
+    F: FnMut(Vec<usize>),
 {
     let mut parents: Vec<Option<usize>> = vec![None; graph.len()];
     let mut colors = vec![Color::White; graph.len()];
@@ -203,7 +203,7 @@ fn find_cycle_inner<F>(
     curr_node: usize,
     cb: &mut F,
 ) where
-    F: FnMut(Vec<usize>) -> (),
+    F: FnMut(Vec<usize>),
 {
     colors[curr_node] = Color::Grey;
     for &next_node in graph[curr_node].iter() {
@@ -271,7 +271,7 @@ fn find_cycle_test() {
 #[allow(unused)]
 fn find_cycle_oriented<F>(graph: &Graph, mut cb: F)
 where
-    F: FnMut(Vec<usize>) -> (),
+    F: FnMut(Vec<usize>),
 {
     let mut parents: Vec<Option<usize>> = vec![None; graph.len()];
     let mut colors = vec![Color::White; graph.len()];
@@ -291,7 +291,7 @@ fn find_cycle_oriented_inner<F>(
     curr_node: usize,
     cb: &mut F,
 ) where
-    F: FnMut(Vec<usize>) -> (),
+    F: FnMut(Vec<usize>),
 {
     colors[curr_node] = Color::Grey;
     for &next_node in graph[curr_node].iter() {
