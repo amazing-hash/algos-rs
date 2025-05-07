@@ -26,6 +26,36 @@ where
 }
 
 #[allow(unused)]
+pub fn binary_search_comp<T, F>(container: &[T], key: &T, comp: F) -> Option<usize>
+where
+    T: std::cmp::Ord, F: Fn(&T, &T) -> std::cmp::Ordering,
+{
+    if container.is_empty() {
+        return None;
+    }
+    let mut l = 0isize;
+    let mut r = isize::try_from(container.len() - 1).unwrap();
+    while l < r {
+        let idx = l + (r - l) / 2;
+        match comp(key, &container[idx as usize]) {
+            std::cmp::Ordering::Equal => {
+                return Some(idx as usize);
+            }
+            std::cmp::Ordering::Greater => {
+                l = idx + 1;
+            }
+            std::cmp::Ordering::Less => {
+                r = idx - 1;
+            }
+        }
+    }
+    match container[l as usize] == *key {
+        true => Some(l as usize),
+        _ => None,
+    }
+}
+
+#[allow(unused)]
 pub fn lower_bound<T>(container: &[T], key: &T) -> usize
 where
     T: std::cmp::Ord,
@@ -50,22 +80,6 @@ where
 }
 
 #[allow(unused)]
-pub fn lower_bound_comp<F>(mut l: isize, mut r: isize, comp: F) -> usize
-where
-    F: Fn(usize) -> bool,
-{
-    while l < r {
-        let idx = l + (r - l) / 2;
-        if comp(idx as usize) {
-            r = idx;
-        } else {
-            l = idx + 1;
-        }
-    }
-    l as usize
-}
-
-#[allow(unused)]
 pub fn upper_bound<T>(container: &[T], key: &T) -> usize
 where
     T: std::cmp::Ord,
@@ -85,22 +99,6 @@ where
     }
     if (l as usize) < container.len() && container[l as usize] <= *key {
         l += 1;
-    }
-    l as usize
-}
-
-#[allow(unused)]
-pub fn upper_bound_comp<F>(mut l: isize, mut r: isize, comp: F) -> usize
-where
-    F: Fn(usize) -> bool,
-{
-    while l < r {
-        let idx = l + (r - l) / 2;
-        if comp(idx as usize) {
-            l = idx + 1;
-        } else {
-            r = idx;
-        }
     }
     l as usize
 }
@@ -142,4 +140,13 @@ fn binary_search_test() {
     let seq = vec![];
     assert_eq!(upper_bound(&seq, &1), 0);
     assert_eq!(lower_bound(&seq, &1), 0);
+
+    let seq = vec![1, 2, 3, 4, 5, 8, 9, 20];
+    let comp = |key: &i32, other: &i32| {
+        key.cmp(other)
+    };
+    assert_eq!(binary_search_comp(&seq, &8, comp).unwrap(), 5);
+    assert_eq!(binary_search_comp(&seq, &1, comp).unwrap(), 0);
+    assert_eq!(binary_search_comp(&seq, &7, comp), None);
+    assert_eq!(binary_search_comp(&seq, &21, comp), None);
 }
