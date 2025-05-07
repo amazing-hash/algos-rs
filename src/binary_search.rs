@@ -7,7 +7,7 @@ where
         return None;
     }
     let mut l = 0isize;
-    let mut r = container.len() as isize - 1;
+    let mut r = isize::try_from(container.len() - 1).unwrap();
     while l < r {
         let idx = l + (r - l) / 2;
         if container[idx as usize] == *key {
@@ -18,11 +18,7 @@ where
         } else {
             r = idx - 1;
         }
-        if l > r {
-            return None;
-        }
     }
-
     match container[l as usize] == *key {
         true => Some(l as usize),
         _ => None,
@@ -38,35 +34,35 @@ where
         return 0;
     }
     let mut l = 0;
-    let mut r = container.len() - 1;
+    let mut r = isize::try_from(container.len() - 1).unwrap();
     while l < r {
         let idx = l + (r - l) / 2;
-        if *key <= container[idx] {
+        if *key <= container[idx as usize] {
             r = idx;
         } else {
             l = idx + 1;
         }
     }
-    if l < container.len() && container[l] < *key {
+    if (l as usize) < container.len() && container[l as usize] < *key {
         l += 1;
     }
-    l
+    l as usize
 }
 
 #[allow(unused)]
-pub fn lower_bound_comp<F>(mut l: usize, mut r: usize, comp: F) -> usize
+pub fn lower_bound_comp<F>(mut l: isize, mut r: isize, comp: F) -> usize
 where
     F: Fn(usize) -> bool,
 {
     while l < r {
         let idx = l + (r - l) / 2;
-        if comp(idx) {
+        if comp(idx as usize) {
             r = idx;
         } else {
             l = idx + 1;
         }
     }
-    l
+    l as usize
 }
 
 #[allow(unused)]
@@ -78,35 +74,35 @@ where
         return 0;
     }
     let mut l = 0;
-    let mut r = container.len() - 1;
+    let mut r = isize::try_from(container.len() - 1).unwrap();
     while l < r {
         let idx = l + (r - l) / 2;
-        if *key >= container[idx] {
+        if *key >= container[idx as usize] {
             l = idx + 1;
         } else {
             r = idx;
         }
     }
-    if l < container.len() && container[l] <= *key {
+    if (l as usize) < container.len() && container[l as usize] <= *key {
         l += 1;
     }
-    l
+    l as usize
 }
 
 #[allow(unused)]
-pub fn upper_bound_comp<F>(mut l: usize, mut r: usize, comp: F) -> usize
+pub fn upper_bound_comp<F>(mut l: isize, mut r: isize, comp: F) -> usize
 where
     F: Fn(usize) -> bool,
 {
     while l < r {
         let idx = l + (r - l) / 2;
-        if comp(idx) {
+        if comp(idx as usize) {
             l = idx + 1;
         } else {
             r = idx;
         }
     }
-    l
+    l as usize
 }
 
 #[cfg(test)]

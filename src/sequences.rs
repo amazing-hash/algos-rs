@@ -92,7 +92,7 @@ pub fn search_insert_pos(arr: &[i32], k: i32) -> usize {
         return 0;
     }
     let mut left = 0isize;
-    let mut right = arr.len() as isize - 1;
+    let mut right = isize::try_from(arr.len() - 1).unwrap();
 
     while left <= right {
         let mid = left + (right - left) / 2;
@@ -125,6 +125,8 @@ fn search_insert_pos_test() {
     assert_eq!(search_insert_pos(array, 5), 0);
     let array = &[];
     assert_eq!(search_insert_pos(array, 5), 0);
+    let array = &[1, 2, 3];
+    assert_eq!(search_insert_pos(array, 5), 3);
 }
 
 // Search longest common subsequence
