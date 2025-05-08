@@ -4,6 +4,8 @@
 * nse is the next smallest element
  */
 
+use std::num::TryFromIntError;
+
 #[allow(unused)]
 pub fn search_nearest_nse_for_each_element(arr: &[u32]) -> Vec<Option<usize>> {
     let mut st = Vec::new();
@@ -87,12 +89,12 @@ fn search_nearest_pse_for_each_element_test() {
 
 // Search insert position of K in a sorted array
 #[allow(unused)]
-pub fn search_insert_pos(arr: &[i32], k: i32) -> usize {
+pub fn search_insert_pos(arr: &[i32], k: i32) -> Result<usize, TryFromIntError> {
     if arr.is_empty() {
-        return 0;
+        return Ok(0);
     }
     let mut left = 0isize;
-    let mut right = isize::try_from(arr.len() - 1).unwrap();
+    let mut right = isize::try_from(arr.len() - 1)?;
 
     while left <= right {
         let mid = left + (right - left) / 2;
@@ -100,7 +102,7 @@ pub fn search_insert_pos(arr: &[i32], k: i32) -> usize {
         #[allow(clippy::comparison_chain)]
         // If k is found at mid
         if arr[mid as usize] == k {
-            return mid as usize;
+            return Ok(mid as usize);
         }
         // If k is smaller, search in left half
         else if arr[mid as usize] > k {
@@ -113,20 +115,20 @@ pub fn search_insert_pos(arr: &[i32], k: i32) -> usize {
     }
 
     // If k is not found, return insert position
-    left as usize
+    Ok(left as usize)
 }
 
 #[cfg(test)]
 #[test]
 fn search_insert_pos_test() {
     let array = &[1, 3, 5, 6];
-    assert_eq!(search_insert_pos(array, 5), 2);
+    assert_eq!(search_insert_pos(array, 5).unwrap(), 2);
     let array = &[12];
-    assert_eq!(search_insert_pos(array, 5), 0);
+    assert_eq!(search_insert_pos(array, 5).unwrap(), 0);
     let array = &[];
-    assert_eq!(search_insert_pos(array, 5), 0);
+    assert_eq!(search_insert_pos(array, 5).unwrap(), 0);
     let array = &[1, 2, 3];
-    assert_eq!(search_insert_pos(array, 5), 3);
+    assert_eq!(search_insert_pos(array, 5).unwrap(), 3);
 }
 
 // Search longest common subsequence
