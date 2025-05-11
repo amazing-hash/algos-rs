@@ -1,9 +1,21 @@
-use std::collections::VecDeque;
+use std::collections::{BinaryHeap, VecDeque};
 
 pub type Graph = Vec<Vec<usize>>;
+pub type GraphWithWeights = Vec<Vec<(usize, u32)>>;
 
 pub fn make_new_used(graph: &Graph) -> Vec<bool> {
     vec![false; graph.len()]
+}
+
+pub fn make_path_from_parents(vertex: usize, parents: &[Option<usize>]) -> Vec<usize> {
+    let mut curr = vertex;
+    let mut path = vec![curr];
+    while let Some(next) = parents[curr] {
+        path.push(next);
+        curr = next;
+    }
+    path.reverse();
+    path
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -410,4 +422,78 @@ fn find_cycle_oriented_test() {
     graph[3].push(1); // Add edge 3 -> 1
 
     find_cycle_oriented(&graph, func);
+}
+
+struct NodeDijkstra {
+    node: usize,
+    dist: u32,
+}
+
+impl PartialEq for NodeDijkstra {
+    fn eq(&self, other: &Self) -> bool {
+        self.dist == other.dist
+    }
+}
+impl Eq for NodeDijkstra {}
+impl PartialOrd for NodeDijkstra {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for NodeDijkstra {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.dist.partial_cmp(&self.dist).unwrap()
+    }
+}
+
+#[allow(unused)]
+pub fn dijkstra<F>(graph: &GraphWithWeights, from: usize, mut cb: F)
+where
+    F: FnMut(&[Option<u32>], &[Option<usize>]),
+{
+    let mut parents = vec![None; graph.len()];
+    let mut visited = vec![false; graph.len()];
+    let mut distances = vec![None; graph.len()];
+    let mut heap = BinaryHeap::new();
+    distances[from] = Some(Default::default());
+    heap.push(NodeDijkstra {
+        node: from,
+        dist: 0u32,
+    });
+    while !heap.is_empty() {
+        let NodeDijkstra { node, dist } = heap.pop().unwrap();
+        visited[node] = true;
+        for (next_node, next_weight) in &graph[node] {
+            if !visited[*next_node]
+                && (distances[*next_node].is_none()
+                    || next_weight + dist < distances[*next_node].unwrap())
+            {
+                parents[*next_node] = Some(node);
+                distances[*next_node] = Some(next_weight + dist);
+                heap.push(NodeDijkstra {
+                    node: *next_node,
+                    dist: distances[*next_node].unwrap(),
+                });
+            }
+        }
+    }
+    cb(&distances, &parents);
+}
+
+#[cfg(test)]
+#[test]
+fn dijkstra_test() {
+    let func = |distances: &[Option<u32>], parents: &[Option<usize>]| {
+        assert_eq!(distances[7], None);
+        assert_eq!(distances[5].unwrap(), 14);
+        assert_eq!(make_path_from_parents(5, parents), vec![1, 2, 3, 5]);
+        assert_eq!(make_path_from_parents(3, parents), vec![1, 2, 3]);
+    };
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push((2, 2)); // Add edge 1 -> 2
+    graph[2].push((3, 5)); // Add edge 2 -> 3
+    graph[3].push((5, 7)); // Add edge 3 -> 5
+    graph[1].push((5, 19)); // Add edge 1 -> 5
+
+    dijkstra(&graph, 1, func);
 }
