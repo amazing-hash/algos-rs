@@ -23,7 +23,8 @@
 - xorshift_32
 #### graph
 - Bfs
-- Search_components
+- Search connected components
+- Search strongly connected components
 - Dfs
 - Find cycle
 - Find cycle in a directed graph

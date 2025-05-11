@@ -67,7 +67,7 @@ fn bfs_test() {
 * Search for connectivity components in an undirected graph.
 */
 #[allow(unused)]
-fn search_components<F>(graph: &Graph, mut cb: F)
+fn search_connected_components<F>(graph: &Graph, mut cb: F)
 where
     F: FnMut(usize, i32),
 {
@@ -100,7 +100,7 @@ where
 
 #[cfg(test)]
 #[test]
-fn search_components_test() {
+fn search_connected_components_test() {
     use std::collections::HashMap;
     let func =
         |node: usize, comp_id: i32| println!("visited vertex {} from component {}", node, comp_id);
@@ -117,28 +117,98 @@ fn search_components_test() {
     graph[3].push(2); // Add edge  3 -> 2
     graph[3].push(4); // Add edge  3 -> 4
     graph[4].push(3); // Add edge  4 -> 3
-    search_components(&graph, func);
+    search_connected_components(&graph, func);
     let mut components = HashMap::new();
     let func = |node: usize, comp_id| {
         let entry = components.entry(comp_id).or_insert(vec![]);
         entry.push(node);
     };
-    search_components(&graph, func);
+    search_connected_components(&graph, func);
     // println!("{:?}", components);
 }
 
+/*
+* Search for strongly connectivity components in an undirected graph.
+*/
 #[allow(unused)]
-fn dfs<F>(graph: &Graph, mut cb: F)
+fn search_strongly_connected_components<F>(graph: &Graph, mut cb: F)
+where
+    F: FnMut(usize, i32),
+{
+    let mut graph_transp: Graph = vec![Vec::new(); graph.len()];
+    for from in 0..graph.len() {
+        for to in graph[from].iter() {
+            graph_transp[*to].push(from);
+        }
+    }
+    let mut visited = vec![false; graph.len()];
+    let mut orders = Vec::with_capacity(graph.len());
+
+    for vertex in 0..graph.len() {
+        if !visited[vertex] {
+            let func = |node: usize, event: Event| {
+                if event == Event::Exit {
+                    orders.push(node);
+                }
+            };
+            dfs(graph, &mut visited, func);
+        }
+    }
+    let mut visited = vec![false; graph.len()];
+    let mut comp_id = 1;
+    for vertex in orders.iter().rev() {
+        if !visited[*vertex] {
+            let func = |node: usize, event: Event| {
+                if event == Event::Enter {
+                    cb(node, comp_id);
+                }
+            };
+            dfs_from(&graph_transp, *vertex, &mut visited, func);
+            comp_id += 1;
+        }
+    }
+}
+
+#[cfg(test)]
+#[test]
+fn search_strongly_connected_components_test() {
+    let func = |node: usize, comp_id: i32| {
+        println!("!!! visited vertex {} from component {}", node, comp_id)
+    };
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push(4); // Add edge  1 -> 4
+    graph[4].push(7); // Add edge  4 -> 7
+    graph[7].push(1); // Add edge  7 -> 1
+    graph[9].push(7); // Add edge  9 -> 7
+    graph[9].push(3); // Add edge  9 -> 3
+    graph[3].push(6); // Add edge  3 -> 6
+    graph[6].push(9); // Add edge  6 -> 9
+    graph[8].push(6); // Add edge  8 -> 6
+    graph[8].push(5); // Add edge  8 -> 5
+    graph[5].push(2); // Add edge  5 -> 2
+    graph[2].push(8); // Add edge  2 -> 8
+    search_strongly_connected_components(&graph, func);
+}
+
+#[allow(unused)]
+fn dfs<F>(graph: &Graph, used: &mut [bool], mut cb: F)
 where
     F: FnMut(usize, Event),
 {
-    let mut used = vec![false; graph.len()];
     let n = graph.len();
     for start_node in 0..n {
         if !used[start_node] {
-            dfs_innner(graph, &mut used, start_node, &mut cb);
+            dfs_innner(graph, used, start_node, &mut cb);
         }
     }
+}
+
+#[allow(unused)]
+fn dfs_from<F>(graph: &Graph, start_node: usize, used: &mut [bool], mut cb: F)
+where
+    F: FnMut(usize, Event),
+{
+    dfs_innner(graph, used, start_node, &mut cb);
 }
 
 #[allow(unused)]
@@ -161,6 +231,7 @@ where
 fn dfs_test() {
     let func = |node: usize, event: Event| println!("visited vertex {}, event {:?}", node, event);
     let mut graph = vec![Vec::new(); 10];
+    let mut used = vec![false; 10];
     graph[1].push(2); // Add edge  1 -> 2
     graph[2].push(1); // Add edge  2 -> 1
     graph[1].push(8); // Add edge  1 -> 8
@@ -169,14 +240,15 @@ fn dfs_test() {
     graph[3].push(2); // Add edge  3 -> 2
     graph[3].push(4); // Add edge  3 -> 4
     graph[4].push(3); // Add edge  4 -> 3
-    dfs(&graph, func);
+    dfs(&graph, &mut used, func);
+    let mut used = vec![false; 10];
     let mut vertexes = vec![];
     let func = |node: usize, event: Event| {
         if event == Event::Enter {
             vertexes.push(node);
         }
     };
-    dfs(&graph, func);
+    dfs(&graph, &mut used, func);
     // println!("{:?}", vertexes);
 }
 
