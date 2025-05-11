@@ -24,7 +24,7 @@ fn bfs<F>(graph: &Graph, mut cb: F)
 where
     F: FnMut(usize),
 {
-    let mut used = vec![false; graph.len()];
+    let mut used = make_new_used(graph);
     let n = graph.len();
     for start_node in 0..n {
         if !used[start_node] {
@@ -75,7 +75,7 @@ fn search_connected_components<F>(graph: &Graph, mut cb: F)
 where
     F: FnMut(usize, i32),
 {
-    let mut used = vec![false; graph.len()];
+    let mut used = make_new_used(graph);
     let n = graph.len();
     let mut comp_id = 1;
     for start_node in 0..n {
