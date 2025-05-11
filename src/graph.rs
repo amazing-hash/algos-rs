@@ -2,6 +2,10 @@ use std::collections::VecDeque;
 
 pub type Graph = Vec<Vec<usize>>;
 
+pub fn make_new_used(graph: &Graph) -> Vec<bool> {
+    vec![false; graph.len()]
+}
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum Color {
     White,
@@ -136,12 +140,13 @@ where
     F: FnMut(usize, i32),
 {
     let mut graph_transp: Graph = vec![Vec::new(); graph.len()];
+    #[allow(clippy::needless_range_loop)]
     for from in 0..graph.len() {
         for to in graph[from].iter() {
             graph_transp[*to].push(from);
         }
     }
-    let mut visited = vec![false; graph.len()];
+    let mut visited = make_new_used(graph);
     let mut orders = Vec::with_capacity(graph.len());
 
     for vertex in 0..graph.len() {
@@ -154,7 +159,7 @@ where
             dfs(graph, &mut visited, func);
         }
     }
-    let mut visited = vec![false; graph.len()];
+    let mut visited = make_new_used(graph);
     let mut comp_id = 1;
     for vertex in orders.iter().rev() {
         if !visited[*vertex] {
@@ -231,7 +236,7 @@ where
 fn dfs_test() {
     let func = |node: usize, event: Event| println!("visited vertex {}, event {:?}", node, event);
     let mut graph = vec![Vec::new(); 10];
-    let mut used = vec![false; 10];
+    let mut used = make_new_used(&graph);
     graph[1].push(2); // Add edge  1 -> 2
     graph[2].push(1); // Add edge  2 -> 1
     graph[1].push(8); // Add edge  1 -> 8
@@ -241,7 +246,7 @@ fn dfs_test() {
     graph[3].push(4); // Add edge  3 -> 4
     graph[4].push(3); // Add edge  4 -> 3
     dfs(&graph, &mut used, func);
-    let mut used = vec![false; 10];
+    let mut used = make_new_used(&graph);
     let mut vertexes = vec![];
     let func = |node: usize, event: Event| {
         if event == Event::Enter {
