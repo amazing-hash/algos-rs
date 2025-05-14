@@ -497,3 +497,50 @@ fn dijkstra_test() {
 
     dijkstra(&graph, 1, func);
 }
+
+#[allow(unused)]
+pub fn floid<F>(graph: &GraphWithWeights, mut cb: F)
+where
+    F: FnMut(&[Vec<Option<u32>>]),
+{
+    let mut dist = vec![vec![None; graph.len()]; graph.len()];
+    for idx in 0..graph.len() {
+        dist[idx][idx] = Some(0);
+        for (to, weight) in graph[idx].iter() {
+            dist[idx][*to] = Some(*weight);
+        }
+    }
+    for i in 0..graph.len() {
+        for j in 0..graph.len() {
+            for k in 0..graph.len() {
+                if dist[j][i].is_some() && dist[i][k].is_some() {
+                    if dist[j][k].is_none() {
+                        dist[j][k] = Some(dist[j][i].unwrap() + dist[i][k].unwrap());
+                    } else {
+                        dist[j][k] = Some(std::cmp::min(
+                            dist[j][k].unwrap(),
+                            dist[j][i].unwrap() + dist[i][k].unwrap(),
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    cb(&dist);
+}
+
+#[cfg(test)]
+#[test]
+fn floid_test() {
+    let mut graph = vec![Vec::new(); 5];
+    graph[1].push((2, 1)); // Add edge 1 -> 2
+    graph[1].push((3, 6)); // Add edge 1 -> 3
+    graph[2].push((3, 4)); // Add edge 2 -> 3
+    graph[2].push((4, 1)); // Add edge 2 -> 4
+    graph[4].push((3, 1)); // Add edge 4 -> 3
+
+    let func = |distances: &[Vec<Option<u32>>]| {
+        assert_eq!(distances[2][4].unwrap(), 1);
+    };
+    floid(&graph, func);
+}
