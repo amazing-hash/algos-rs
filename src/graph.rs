@@ -32,27 +32,22 @@ pub enum Event {
 }
 
 #[allow(unused)]
-fn bfs<F>(graph: &Graph, mut cb: F)
+fn bfs<F>(graph: &Graph, from: usize, used: &mut [bool], mut cb: F)
 where
     F: FnMut(usize),
 {
-    let mut used = make_new_used(graph);
-    let n = graph.len();
-    for start_node in 0..n {
-        if !used[start_node] {
-            // visited vertex start_node
-            cb(start_node);
-            let mut queue = VecDeque::new();
-            queue.push_back(start_node);
-            used[start_node] = true;
-            while let Some(curr_node) = queue.pop_front() {
-                for &next_node in graph[curr_node].iter() {
-                    if !used[next_node] {
-                        // visited vertex next_node
-                        cb(next_node);
-                        used[next_node] = true;
-                        queue.push_back(next_node);
-                    }
+    if !used[from] {
+        let mut queue = VecDeque::new();
+        queue.push_back(from);
+        used[from] = true;
+        cb(from);
+        while let Some(from) = queue.pop_front() {
+            for &to in graph[from].iter() {
+                if !used[to] {
+                    // visited vertex next_node
+                    cb(to);
+                    used[to] = true;
+                    queue.push_back(to);
                 }
             }
         }
@@ -62,7 +57,7 @@ where
 #[cfg(test)]
 #[test]
 fn bfs_test() {
-    let func = |node: usize| println!("visited vertex {}", node);
+    let func = |to: usize| println!("visited node {}", to);
     let mut graph = vec![Vec::new(); 10];
     graph[1].push(2); // Add edge 1 -> 2
     graph[2].push(1); // Add edge  2 -> 1
@@ -72,10 +67,12 @@ fn bfs_test() {
     graph[3].push(2); // Add edge  3 -> 2
     graph[3].push(4); // Add edge  3 -> 4
     graph[4].push(3); // Add edge  4 -> 3
-    bfs(&graph, func);
+    let mut used = make_new_used(&graph);
+    bfs(&graph, 1, &mut used, func);
     let mut vertexes = vec![];
-    let func = |node: usize| vertexes.push(node);
-    bfs(&graph, func);
+    let func = |to: usize| vertexes.push(to);
+    let mut used = make_new_used(&graph);
+    bfs(&graph, 1, &mut used, func);
     // println!("{:?}", vertexes);
 }
 
@@ -85,31 +82,16 @@ fn bfs_test() {
 #[allow(unused)]
 fn search_connected_components<F>(graph: &Graph, mut cb: F)
 where
-    F: FnMut(usize, i32),
+    F: FnMut(Vec<usize>),
 {
     let mut used = make_new_used(graph);
     let n = graph.len();
-    let mut comp_id = 1;
-    for start_node in 0..n {
-        if !used[start_node] {
-            // The beginning of the traversal of the connectivity component
-            // Visited vertex start_node from comp_id;
-            cb(start_node, comp_id);
-            let mut queue = VecDeque::new();
-            queue.push_back(start_node);
-            used[start_node] = true;
-            while let Some(curr_node) = queue.pop_front() {
-                for &next_node in graph[curr_node].iter() {
-                    if !used[next_node] {
-                        // Visited vertex next_node from comp_id;
-                        cb(next_node, comp_id);
-                        used[next_node] = true;
-                        queue.push_back(next_node);
-                    }
-                }
-            }
-            // Completing the traversal of the connectivity component
-            comp_id += 1;
+    for from in 0..n {
+        if !used[from] {
+            let mut vertexes = vec![];
+            let func = |to: usize| vertexes.push(to);
+            bfs(graph, from, &mut used, func);
+            cb(vertexes);
         }
     }
 }
@@ -117,9 +99,7 @@ where
 #[cfg(test)]
 #[test]
 fn search_connected_components_test() {
-    use std::collections::HashMap;
-    let func =
-        |node: usize, comp_id: i32| println!("visited vertex {} from component {}", node, comp_id);
+    let func = |vertexes: Vec<usize>| println!("vertexes from component {:?}", vertexes);
     let mut graph = vec![Vec::new(); 10];
     graph[1].push(2); // Add edge  1 -> 2
     graph[2].push(1); // Add edge  2 -> 1
@@ -134,13 +114,6 @@ fn search_connected_components_test() {
     graph[3].push(4); // Add edge  3 -> 4
     graph[4].push(3); // Add edge  4 -> 3
     search_connected_components(&graph, func);
-    let mut components = HashMap::new();
-    let func = |node: usize, comp_id| {
-        let entry = components.entry(comp_id).or_insert(vec![]);
-        entry.push(node);
-    };
-    search_connected_components(&graph, func);
-    // println!("{:?}", components);
 }
 
 /*
@@ -213,34 +186,34 @@ where
     F: FnMut(usize, Event),
 {
     let n = graph.len();
-    for start_node in 0..n {
-        if !used[start_node] {
-            dfs_innner(graph, used, start_node, &mut cb);
+    for from in 0..n {
+        if !used[from] {
+            dfs_innner(graph, used, from, &mut cb);
         }
     }
 }
 
 #[allow(unused)]
-fn dfs_from<F>(graph: &Graph, start_node: usize, used: &mut [bool], mut cb: F)
+fn dfs_from<F>(graph: &Graph, from: usize, used: &mut [bool], mut cb: F)
 where
     F: FnMut(usize, Event),
 {
-    dfs_innner(graph, used, start_node, &mut cb);
+    dfs_innner(graph, used, from, &mut cb);
 }
 
 #[allow(unused)]
-fn dfs_innner<F>(graph: &Graph, used: &mut [bool], curr_node: usize, cb: &mut F)
+fn dfs_innner<F>(graph: &Graph, used: &mut [bool], from: usize, cb: &mut F)
 where
     F: FnMut(usize, Event),
 {
-    cb(curr_node, Event::Enter);
-    used[curr_node] = true;
-    for &next_node in graph[curr_node].iter() {
+    cb(from, Event::Enter);
+    used[from] = true;
+    for &next_node in graph[from].iter() {
         if !used[next_node] {
             dfs_innner(graph, used, next_node, cb);
         }
     }
-    cb(curr_node, Event::Exit);
+    cb(from, Event::Exit);
 }
 
 #[cfg(test)]
