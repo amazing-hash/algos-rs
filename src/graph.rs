@@ -136,24 +136,24 @@ where
 
     for vertex in 0..graph.len() {
         if !visited[vertex] {
-            let func = |node: usize, event: Event| {
+            let mut func = |node: usize, event: Event| {
                 if event == Event::Exit {
                     orders.push(node);
                 }
             };
-            dfs(graph, &mut visited, func);
+            dfs(graph, vertex, &mut visited, &mut func);
         }
     }
     let mut visited = make_new_used(graph);
     let mut comp_id = 1;
     for vertex in orders.iter().rev() {
         if !visited[*vertex] {
-            let func = |node: usize, event: Event| {
+            let mut func = |node: usize, event: Event| {
                 if event == Event::Enter {
                     cb(node, comp_id);
                 }
             };
-            dfs_from(&graph_transp, *vertex, &mut visited, func);
+            dfs(&graph_transp, *vertex, &mut visited, &mut func);
             comp_id += 1;
         }
     }
@@ -180,29 +180,21 @@ fn search_strongly_connected_components_test() {
     search_strongly_connected_components(&graph, func);
 }
 
-#[allow(unused)]
-fn dfs<F>(graph: &Graph, used: &mut [bool], mut cb: F)
-where
-    F: FnMut(usize, Event),
-{
-    let n = graph.len();
-    for from in 0..n {
-        if !used[from] {
-            dfs_innner(graph, used, from, &mut cb);
-        }
-    }
-}
+// #[allow(unused)]
+// fn dfs<F>(graph: &Graph, used: &mut [bool], mut cb: F)
+// where
+//     F: FnMut(usize, Event),
+// {
+//     let n = graph.len();
+//     for from in 0..n {
+//         if !used[from] {
+//             dfs_innner(graph, used, from, &mut cb);
+//         }
+//     }
+// }
 
 #[allow(unused)]
-fn dfs_from<F>(graph: &Graph, from: usize, used: &mut [bool], mut cb: F)
-where
-    F: FnMut(usize, Event),
-{
-    dfs_innner(graph, used, from, &mut cb);
-}
-
-#[allow(unused)]
-fn dfs_innner<F>(graph: &Graph, used: &mut [bool], from: usize, cb: &mut F)
+fn dfs<F>(graph: &Graph, from: usize, used: &mut [bool], cb: &mut F)
 where
     F: FnMut(usize, Event),
 {
@@ -210,7 +202,7 @@ where
     used[from] = true;
     for &next_node in graph[from].iter() {
         if !used[next_node] {
-            dfs_innner(graph, used, next_node, cb);
+            dfs(graph, next_node, used, cb);
         }
     }
     cb(from, Event::Exit);
@@ -219,7 +211,8 @@ where
 #[cfg(test)]
 #[test]
 fn dfs_test() {
-    let func = |node: usize, event: Event| println!("visited vertex {}, event {:?}", node, event);
+    let mut func =
+        |node: usize, event: Event| println!("visited vertex {}, event {:?}", node, event);
     let mut graph = vec![Vec::new(); 10];
     let mut used = make_new_used(&graph);
     graph[1].push(2); // Add edge  1 -> 2
@@ -230,15 +223,15 @@ fn dfs_test() {
     graph[3].push(2); // Add edge  3 -> 2
     graph[3].push(4); // Add edge  3 -> 4
     graph[4].push(3); // Add edge  4 -> 3
-    dfs(&graph, &mut used, func);
+    dfs(&graph, 1, &mut used, &mut func);
     let mut used = make_new_used(&graph);
     let mut vertexes = vec![];
-    let func = |node: usize, event: Event| {
+    let mut func = |node: usize, event: Event| {
         if event == Event::Enter {
             vertexes.push(node);
         }
     };
-    dfs(&graph, &mut used, func);
+    dfs(&graph, 0, &mut used, &mut func);
     // println!("{:?}", vertexes);
 }
 
