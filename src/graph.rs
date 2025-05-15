@@ -122,7 +122,7 @@ fn search_connected_components_test() {
 #[allow(unused)]
 fn search_strongly_connected_components<F>(graph: &Graph, mut cb: F)
 where
-    F: FnMut(usize, i32),
+    F: FnMut(Vec<usize>),
 {
     let mut graph_transp: Graph = vec![Vec::new(); graph.len()];
     #[allow(clippy::needless_range_loop)]
@@ -145,16 +145,16 @@ where
         }
     }
     let mut visited = make_new_used(graph);
-    let mut comp_id = 1;
     for vertex in orders.iter().rev() {
         if !visited[*vertex] {
-            let mut func = |node: usize, event: Event| {
+            let mut vertexes = vec![];
+            let mut func = |to: usize, event: Event| {
                 if event == Event::Enter {
-                    cb(node, comp_id);
+                    vertexes.push(to);
                 }
             };
             dfs(&graph_transp, *vertex, &mut visited, &mut func);
-            comp_id += 1;
+            cb(vertexes);
         }
     }
 }
@@ -162,9 +162,7 @@ where
 #[cfg(test)]
 #[test]
 fn search_strongly_connected_components_test() {
-    let func = |node: usize, comp_id: i32| {
-        println!("!!! visited vertex {} from component {}", node, comp_id)
-    };
+    let func = |vertexes: Vec<usize>| println!("vertexes from component {:?}", vertexes);
     let mut graph = vec![Vec::new(); 10];
     graph[1].push(4); // Add edge  1 -> 4
     graph[4].push(7); // Add edge  4 -> 7
@@ -179,19 +177,6 @@ fn search_strongly_connected_components_test() {
     graph[2].push(8); // Add edge  2 -> 8
     search_strongly_connected_components(&graph, func);
 }
-
-// #[allow(unused)]
-// fn dfs<F>(graph: &Graph, used: &mut [bool], mut cb: F)
-// where
-//     F: FnMut(usize, Event),
-// {
-//     let n = graph.len();
-//     for from in 0..n {
-//         if !used[from] {
-//             dfs_innner(graph, used, from, &mut cb);
-//         }
-//     }
-// }
 
 #[allow(unused)]
 fn dfs<F>(graph: &Graph, from: usize, used: &mut [bool], cb: &mut F)
