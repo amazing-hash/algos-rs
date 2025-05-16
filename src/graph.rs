@@ -3,8 +3,8 @@ use std::collections::{BinaryHeap, VecDeque};
 pub type Graph = Vec<Vec<usize>>;
 pub type GraphWithWeights = Vec<Vec<(usize, u32)>>;
 
-pub fn make_new_used(graph: &Graph) -> Vec<bool> {
-    vec![false; graph.len()]
+pub fn make_new_used(graph: &Graph) -> Vec<Color> {
+    vec![Color::White; graph.len()]
 }
 
 pub fn make_path_from_parents(vertex: usize, parents: &[Option<usize>]) -> Vec<usize> {
@@ -28,25 +28,27 @@ pub enum Color {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Event {
     Enter,
+    BackEdge(usize),
+    Examine(usize),
     Exit,
 }
 
 #[allow(unused)]
-fn bfs<F>(graph: &Graph, from: usize, used: &mut [bool], mut cb: F)
+fn bfs<F>(graph: &Graph, from: usize, used: &mut [Color], mut cb: F)
 where
     F: FnMut(usize),
 {
-    if !used[from] {
+    if used[from] == Color::White {
         let mut queue = VecDeque::new();
         queue.push_back(from);
-        used[from] = true;
+        used[from] = Color::Black;
         cb(from);
         while let Some(from) = queue.pop_front() {
             for &to in graph[from].iter() {
-                if !used[to] {
+                if used[to] == Color::White {
                     // visited vertex next_node
                     cb(to);
-                    used[to] = true;
+                    used[to] = Color::Black;
                     queue.push_back(to);
                 }
             }
@@ -87,7 +89,7 @@ where
     let mut used = make_new_used(graph);
     let n = graph.len();
     for from in 0..n {
-        if !used[from] {
+        if used[from] == Color::White {
             let mut vertexes = vec![];
             let func = |to: usize| vertexes.push(to);
             bfs(graph, from, &mut used, func);
@@ -135,7 +137,7 @@ where
     let mut orders = Vec::with_capacity(graph.len());
 
     for vertex in 0..graph.len() {
-        if !visited[vertex] {
+        if visited[vertex] == Color::White {
             let mut func = |node: usize, event: Event| {
                 if event == Event::Exit {
                     orders.push(node);
@@ -146,7 +148,7 @@ where
     }
     let mut visited = make_new_used(graph);
     for vertex in orders.iter().rev() {
-        if !visited[*vertex] {
+        if visited[*vertex] == Color::White {
             let mut vertexes = vec![];
             let mut func = |to: usize, event: Event| {
                 if event == Event::Enter {
@@ -179,17 +181,22 @@ fn search_strongly_connected_components_test() {
 }
 
 #[allow(unused)]
-fn dfs<F>(graph: &Graph, from: usize, used: &mut [bool], cb: &mut F)
+fn dfs<F>(graph: &Graph, from: usize, used: &mut [Color], cb: &mut F)
 where
     F: FnMut(usize, Event),
 {
     cb(from, Event::Enter);
-    used[from] = true;
-    for &next_node in graph[from].iter() {
-        if !used[next_node] {
-            dfs(graph, next_node, used, cb);
+    used[from] = Color::Grey;
+    for &to in graph[from].iter() {
+        if used[to] == Color::Grey {
+            cb(from, Event::BackEdge(to));
+        }
+        if used[to] == Color::White {
+            cb(to, Event::Examine(from));
+            dfs(graph, to, used, cb);
         }
     }
+    used[from] = Color::Black;
     cb(from, Event::Exit);
 }
 
@@ -226,45 +233,30 @@ where
     F: FnMut(Vec<usize>),
 {
     let mut parents: Vec<Option<usize>> = vec![None; graph.len()];
-    let mut colors = vec![Color::White; graph.len()];
-    let n = graph.len();
-    for start_node in 0..n {
-        if colors[start_node] == Color::White {
-            find_cycle_inner(graph, &mut colors, &mut parents, start_node, &mut cb);
+    let mut used = make_new_used(graph);
+    for from in 0..graph.len() {
+        if used[from] == Color::White {
+            let mut func = |node: usize, event: Event| {
+                if let Event::Examine(from) = event {
+                    parents[node] = Some(from)
+                }
+                if let Event::BackEdge(to) = event {
+                    if parents[node] != Some(to) {
+                        let mut s = node;
+                        let mut vertexes = vec![];
+                        vertexes.push(s);
+                        while s != to {
+                            s = parents[s].unwrap();
+                            vertexes.push(s);
+                        }
+                        vertexes.reverse();
+                        cb(vertexes);
+                    }
+                }
+            };
+            dfs(graph, from, &mut used, &mut func);
         }
     }
-}
-
-#[allow(unused)]
-fn find_cycle_inner<F>(
-    graph: &Graph,
-    colors: &mut [Color],
-    parents: &mut [Option<usize>],
-    curr_node: usize,
-    cb: &mut F,
-) where
-    F: FnMut(Vec<usize>),
-{
-    colors[curr_node] = Color::Grey;
-    for &next_node in graph[curr_node].iter() {
-        if colors[next_node] == Color::Grey && Some(next_node) != parents[curr_node] {
-            // cycle has been detected
-            let mut s = curr_node;
-            let mut vertexes = vec![];
-            vertexes.push(s);
-            while s != next_node {
-                s = parents[s].unwrap();
-                vertexes.push(s);
-            }
-            vertexes.reverse();
-            cb(vertexes);
-        }
-        if colors[next_node] == Color::White {
-            parents[next_node] = Some(curr_node);
-            find_cycle_inner(graph, colors, parents, next_node, cb);
-        }
-    }
-    colors[curr_node] = Color::Black;
 }
 
 #[cfg(test)]
@@ -314,45 +306,28 @@ where
     F: FnMut(Vec<usize>),
 {
     let mut parents: Vec<Option<usize>> = vec![None; graph.len()];
-    let mut colors = vec![Color::White; graph.len()];
-    let n = graph.len();
-    for start_node in 0..n {
-        if colors[start_node] == Color::White {
-            find_cycle_oriented_inner(graph, &mut colors, &mut parents, start_node, &mut cb);
+    let mut used = make_new_used(graph);
+    for from in 0..graph.len() {
+        if used[from] == Color::White {
+            let mut func = |node: usize, event: Event| {
+                if let Event::Examine(from) = event {
+                    parents[node] = Some(from)
+                }
+                if let Event::BackEdge(to) = event {
+                    let mut s = node;
+                    let mut vertexes = vec![];
+                    vertexes.push(s);
+                    while s != to {
+                        s = parents[s].unwrap();
+                        vertexes.push(s);
+                    }
+                    vertexes.reverse();
+                    cb(vertexes);
+                }
+            };
+            dfs(graph, from, &mut used, &mut func);
         }
     }
-}
-
-#[allow(unused)]
-fn find_cycle_oriented_inner<F>(
-    graph: &Graph,
-    colors: &mut [Color],
-    parents: &mut [Option<usize>],
-    curr_node: usize,
-    cb: &mut F,
-) where
-    F: FnMut(Vec<usize>),
-{
-    colors[curr_node] = Color::Grey;
-    for &next_node in graph[curr_node].iter() {
-        if colors[next_node] == Color::Grey {
-            // cycle has been detected
-            let mut s = curr_node;
-            let mut vertexes = vec![];
-            vertexes.push(s);
-            while s != next_node {
-                s = parents[s].unwrap();
-                vertexes.push(s);
-            }
-            vertexes.reverse();
-            cb(vertexes);
-        }
-        if colors[next_node] == Color::White {
-            parents[next_node] = Some(curr_node);
-            find_cycle_oriented_inner(graph, colors, parents, next_node, cb);
-        }
-    }
-    colors[curr_node] = Color::Black;
 }
 
 #[cfg(test)]
