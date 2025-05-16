@@ -470,3 +470,64 @@ fn floid_test() {
     };
     floid(&graph, func);
 }
+
+#[allow(unused)]
+fn topological_sort<F>(graph: &Graph, mut cb: F)
+where
+    F: FnMut(Vec<usize>),
+{
+    let mut sort = vec![];
+    let mut used = make_new_used(graph);
+    for from in 0..graph.len() {
+        if used[from] == Color::White {
+            let mut func = |node: usize, event: Event| {
+                if let Event::Exit = event {
+                    sort.push(node);
+                }
+            };
+            dfs(graph, from, &mut used, &mut func);
+        }
+    }
+    sort.reverse();
+    cb(sort);
+}
+
+#[cfg(test)]
+#[test]
+fn topology_sort_test() {
+    let mut graph = vec![Vec::new(); 10];
+    graph[1].push(2); // Add edge 1 -> 2
+    graph[1].push(3); // Add edge 1 -> 3
+    graph[1].push(5); // Add edge 1 -> 5
+    graph[1].push(4); // Add edge 1 -> 4
+    graph[2].push(4); // Add edge 2 -> 4
+    graph[3].push(4); // Add edge 3 -> 4
+    graph[3].push(5); // Add edge 3 -> 5
+
+    let func = |vertexes: Vec<usize>| {
+        assert_eq!(vertexes, vec![9, 8, 7, 6, 1, 3, 5, 2, 4, 0]);
+    };
+    topological_sort(&graph, func);
+
+    graph[6].push(7); // Add edge 6 -> 7
+    graph[7].push(8); // Add edge 7 -> 8
+
+    let func = |vertexes: Vec<usize>| {
+        assert_eq!(vertexes, vec![9, 6, 7, 8, 1, 3, 5, 2, 4, 0]);
+    };
+    topological_sort(&graph, func);
+
+    let mut graph = vec![Vec::new(); 10];
+    graph[2].push(4); // Add edge 2 -> 4
+    graph[2].push(5); // Add edge 2 -> 5
+    graph[2].push(1); // Add edge 2 -> 1
+    graph[3].push(1); // Add edge 3 -> 1
+    graph[4].push(5); // Add edge 4 -> 5
+    graph[4].push(3); // Add edge 4 -> 3
+    graph[5].push(3); // Add edge 5 -> 3
+
+    let func = |vertexes: Vec<usize>| {
+        assert_eq!(vertexes, vec![9, 8, 7, 6, 2, 4, 5, 3, 1, 0]);
+    };
+    topological_sort(&graph, func);
+}
